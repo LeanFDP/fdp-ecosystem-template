@@ -1,0 +1,50 @@
+/* House style for this FDP.
+
+   This file belongs to this instance, not to the engine: "Update engine" never touches it.
+   The site loads it after the viewer's style.css and after the theme from fdp.config.json,
+   so any rule here wins. It is empty by default; uncomment and edit what you need.
+
+   Most house styles only need fdp.config.json → "theme" (colours, fonts, corners, logo).
+   Use this file for what the config does not cover. */
+
+/* ── Variables the whole viewer uses ──
+:root {
+  --primary: #b3261e;        links, buttons, the logo when it uses currentColor
+  --primary-hover: #8c1d18;
+  --on-primary: #ffffff;     text on primary buttons
+  --bg: #ffffff;             page background
+  --surface: #ffffff;        cards and tiles
+  --tint: #faf5f4;           hero, footer
+  --tint-2: #f3e6e4;         chips, icon discs
+  --text: #1d1b1b;
+  --sub: #5e5655;            secondary text
+  --faint: #938a89;
+  --border: #e7dcda;
+  --code-bg: #faf7f6;
+  --serif: 'Merriweather', Georgia, serif;     headings
+  --sans: 'Inter', system-ui, sans-serif;      body text
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --radius: 4px;             cards and tiles
+  --radius-btn: 4px;         buttons, chips, tabs, search bar
+}
+*/
+
+/* ── Self-hosted fonts ──
+   Put the font files in assets/fonts/, set "fontsUrl": "" in fdp.config.json
+   so no Google Fonts are loaded, and name the font as headingFont or bodyFont.
+@font-face {
+  font-family: 'My Corporate Sans';
+  src: url('fonts/my-corporate-sans.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
+*/
+
+/* ── Examples of finer adjustments ──
+.topbar { background: var(--primary); }                        coloured top bar
+.topbar .lockup, .topbar .lockup .sub, .topbar .lockup svg, .topbar .topnav a { color: var(--on-primary); }
+.topbar .btn { background: var(--on-primary); color: var(--primary); border-color: var(--on-primary); }
+.lockup img, .lockup svg { height: 36px; width: auto; }        larger logo
+h1, h2, h3 { text-transform: uppercase; letter-spacing: .04em; }
+footer { background: var(--text); color: var(--bg); }
+*/

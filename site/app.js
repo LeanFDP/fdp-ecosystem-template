@@ -394,7 +394,8 @@ function renderChrome() {
     (fairReport ? '<a href="#/fair">FAIR tests</a>' : '') +
     (repo ? link(`https://github.com/${repo.org}/${repo.name}#readme`, 'About') +
             link(`https://github.com/${repo.org}/${repo.name}/issues/new?template=add-data-source.yml`, 'Add a data source') : '') +
-    (CFG.orcidForm ? link(CFG.orcidForm, 'Add with ORCID') : '');
+    (CFG.orcidForm ? link(CFG.orcidForm, 'Add with ORCID') : '') +
+    (CFG.navLinks || []).map(l => link(l.url, l.label)).join('');
   $('topright').innerHTML = (repo ? `<a class="btn ghost" href="https://github.com/${esc(repo.org)}/${esc(repo.name)}" target="_blank" rel="noopener">GitHub</a>` : '') +
     `<a class="btn" href="${esc(indexModel.file)}" target="_blank" rel="noopener">Turtle</a>`;
   $('footer').innerHTML = `<div><div class="lockup">${LOGO}<span>${esc(name)}</span></div>

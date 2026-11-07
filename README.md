@@ -21,8 +21,8 @@ Each catalog describes one resource and **every way to obtain it**: portal, APIs
 
    Your site appears at `https://<owner>.github.io/<repository>/`.
 4. Make it yours:
-   - **`fdp.config.json`:** name, headline (`*word*` is emphasised), description, keywords, maintainer, colours, fonts
-   - **`assets/logo.svg`:** your logo, also used as the favicon. It is drawn in the theme colour wherever it uses `currentColor`.
+   - **`fdp.config.json`:** name, headline (`*word*` is emphasised), description, keywords, maintainer
+   - **Your house style:** colours, fonts, corners, logo and extra links; see [House style](#house-style)
 5. Replace the example: remove `fdp/wikidata-fdp/` and its entry in `fdp/index/catalog.ttl`. Then add sources through **Issues → New issue → Add a data source**, or follow [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Optional:
@@ -39,6 +39,28 @@ Optional:
 | **Credit** | Contributors from commits, pull requests and form submissions, with names, Wikidata items and ORCID iDs from Wikidata (P2037). Published in the site and as RDF (`dcterms:contributor`). |
 | **FAIR assessment** | Walks every level of the FDP and runs the [OSTrails FAIR Champion](https://tests.ostrails.eu/) tests: weekly, after deploys and on demand |
 | **Validation** | Every push checks that the Turtle parses, the DCAT shape, the vocabulary terms and the index consistency, and validates every node against the ShEx shapes in `scripts/shapes/` |
+
+## House style
+
+Every FDP built from this template can look like its organisation. There are two layers, and neither is touched by engine updates.
+
+**1. `theme` in `fdp.config.json`** covers most house styles:
+
+| Key | What it sets | Default |
+|---|---|---|
+| `light`, `dark` | Colours for light and dark mode: `primary`, `primaryHover`, `onPrimary`, `bg`, `surface`, `tint`, `tint2`, `text`, `sub`, `faint`, `border`, `codeBg` (hex) | Blue |
+| `headingFont`, `bodyFont`, `monoFont` | Font families | Source Serif 4, Source Sans 3, JetBrains Mono |
+| `fontsUrl` | Stylesheet that loads the fonts. Leave it out for Google Fonts; set `""` for self-hosted fonts | Google Fonts |
+| `radius` | Corners of cards and tiles, in pixels or a CSS length; `0` for square | `12` |
+| `buttonRadius` | Corners of buttons, chips, tabs and the search bar | `999` (pill) |
+| `logo` | SVG (drawn in `primary` wherever it uses `currentColor`), PNG, JPEG or WebP | `assets/logo.svg` |
+| `favicon` | Browser-tab icon, if it should differ from the logo | The logo |
+| `navLinks` | Extra links in the top bar, e.g. `[{"label": "Our institute", "url": "https://example.org"}]` | None |
+| `stylesheet` | Your own CSS, see below | `assets/house-style.css` |
+
+**2. `assets/house-style.css`** is for everything else. It loads after the viewer's stylesheet and the theme, so any rule in it wins. The file lists every CSS variable the viewer uses and has commented-out examples: a coloured top bar, a larger logo, self-hosted fonts.
+
+Keep logos, fonts and the stylesheet in `assets/`: only that folder is published with the site. Check both light and dark mode, and keep text readable against its background (a contrast of at least 4.5:1).
 
 ## Engine and content
 
