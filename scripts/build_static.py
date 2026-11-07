@@ -10,7 +10,7 @@ sees an empty page. This step, run after scripts/build-site.sh, writes into _sit
 * FAIR signposting links (describedby, cite-as, license) in <head>;
 * sitemap.xml (submit it in Google Search Console; a robots.txt under a project
   path like /<repo>/ would be ignored by crawlers, so none is written);
-* the instance's title, description, fonts, colours and logo from fdp.config.json.
+* the instance's title, description, fonts, colours, logo and house style from fdp.config.json.
 
     python3 scripts/build_static.py _site [public URL; default: siteUrl from fdp.config.json]
 """
@@ -46,34 +46,65 @@ def css_vars(palette):
     return "; ".join(f"{THEME_VARS[k]}: {v}" for k, v in (palette or {}).items() if k in THEME_VARS and re.match(r"^#[0-9a-fA-F]{3,8}$", v))
 
 
+def css_length(v):
+    """A corner radius from the config: a number (pixels) or a CSS length such as 4px or 0.5rem."""
+    v = str(v).strip()
+    if re.fullmatch(r"\d+(\.\d+)?", v):
+        return v + "px"
+    return v if re.fullmatch(r"\d+(\.\d+)?(px|rem|em|%)", v) else None
+
+
+def font_name(f):
+    return re.sub(r"[^A-Za-z0-9 \-]", "", f)
+
+
 def instance_head(e, public):
-    """Title, description, favicon, fonts, theme, logo and runtime config of this instance."""
+    """Title, description, favicon, fonts, theme, logo, house style and runtime config of this instance."""
     theme = CONFIG.get("theme", {})
-    heading, body = theme.get("headingFont", "Source Serif 4"), theme.get("bodyFont", "Source Sans 3")
-    fam = lambda f: re.sub(r"[^A-Za-z0-9 ]", "", f).replace(" ", "+")
-    fonts = theme.get("fontsUrl") or (f"https://fonts.googleapis.com/css2?family={fam(heading)}:ital,wght@0,400;0,700;1,400"
-                                      f"&family={fam(body)}:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap")
+    heading, body = font_name(theme.get("headingFont", "Source Serif 4")), font_name(theme.get("bodyFont", "Source Sans 3"))
+    mono = font_name(theme.get("monoFont", "JetBrains Mono"))
+    fam = lambda f: f.replace(" ", "+")
+    # fontsUrl: absent = Google Fonts for the three fonts; "" = none (self-hosted fonts, @font-face in the house style).
+    fonts = theme["fontsUrl"] if "fontsUrl" in theme else (
+        f"https://fonts.googleapis.com/css2?family={fam(heading)}:ital,wght@0,400;0,700;1,400"
+        f"&family={fam(body)}:wght@400;500;600;700&family={fam(mono)}:wght@400;600&display=swap")
     light, dark = css_vars(theme.get("light")), css_vars(theme.get("dark"))
+    shape = "".join(f" {var}: {css_length(theme[k])};" for k, var in (("radius", "--radius"), ("buttonRadius", "--radius-btn"))
+                    if k in theme and css_length(theme[k]))
     dark_block = f"{dark}; color-scheme: dark" if dark else ""
-    style = (f":root {{ --serif: '{heading}', Georgia, serif; --sans: '{body}', system-ui, sans-serif; {light} }}"
+    style = (f":root {{ --serif: '{heading}', Georgia, serif; --sans: '{body}', system-ui, sans-serif;"
+             f" --mono: '{mono}', ui-monospace, monospace;{shape} {light} }}"
              + (f" @media (prefers-color-scheme: dark) {{ :root:not([data-theme=\"light\"]) {{ {dark_block} }} }}"
                 f" :root[data-theme=\"dark\"] {{ {dark_block} }}" if dark else ""))
-    logo_path = ROOT / theme.get("logo", "assets/logo.svg")
-    logo_svg = ""
-    if logo_path.exists():
-        logo_svg = re.sub(r"<!--.*?-->|<\?xml[^>]*\?>", "", logo_path.read_text(), flags=re.S).strip()
-        logo_svg = re.sub(r'(<svg\b[^>]*?)\s+color="[^"]*"', r"\1", logo_svg, count=1)   # inline copy follows the theme colour
+    # The logo: an SVG is inlined so it follows the theme colour; PNG, JPEG or WebP is shown as an image.
+    logo_rel = theme.get("logo", "assets/logo.svg")
+    logo_path = ROOT / logo_rel
+    logo_html = ""
+    if logo_path.exists() and logo_path.suffix.lower() == ".svg":
+        logo_html = re.sub(r"<!--.*?-->|<\?xml[^>]*\?>", "", logo_path.read_text(), flags=re.S).strip()
+        logo_html = re.sub(r'(<svg\b[^>]*?)\s+color="[^"]*"', r"\1", logo_html, count=1)   # inline copy follows the theme colour
+    elif logo_path.exists():
+        logo_html = f'<img src="{e(logo_rel)}" alt="">'
+    favicon = theme.get("favicon") or (logo_rel if logo_html else "")
+    icon_type = {".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon"}.get(Path(favicon).suffix.lower())
+    icon_attr = f' type="{icon_type}"' if icon_type else ""
+    # The house style: the instance's own stylesheet in assets/, loaded last so it can override any rule of the viewer.
+    house = theme.get("stylesheet", "assets/house-style.css")
+    house_link = f'<link rel="stylesheet" href="{e(house)}">\n' if house and (ROOT / house).is_file() else ""
     runtime = {k: CONFIG.get(k) for k in ("name", "headline", "indexFolder", "repository", "branch", "siteUrl", "template")}
     runtime["orcidForm"] = (CONFIG.get("orcidForm") or {}).get("url") or ""
+    runtime["navLinks"] = [{"label": str(l["label"]), "url": str(l["url"])} for l in theme.get("navLinks", [])
+                           if isinstance(l, dict) and l.get("label") and re.match(r"^https?://", str(l.get("url", "")))]
     runtime_json = json.dumps(runtime, ensure_ascii=False).replace("</", "<\\/")
     return (f"<title>{e(CONFIG['name'])}</title>\n"
             f'<meta name="description" content="{e(CONFIG.get("description", ""))}">\n'
-            + (f'<link rel="icon" type="image/svg+xml" href="{e(theme.get("logo", "assets/logo.svg"))}">\n' if logo_svg else "")
+            + (f'<link rel="icon"{icon_attr} href="{e(favicon)}">\n' if favicon else "")
             + f'<link rel="alternate" type="text/turtle" href="fdp/{e(INDEX_FOLDER)}/catalog.ttl">\n'
-            f'<link rel="stylesheet" href="{e(fonts)}">\n'
-            f'<style id="fdp-theme">{style}</style>\n'
-            f"<script>window.FDP_CONFIG = {runtime_json};</script>\n"
-            + (f'<template id="fdp-logo">{logo_svg}</template>\n' if logo_svg else ""))
+            + (f'<link rel="stylesheet" href="{e(fonts)}">\n' if fonts else "")
+            + f'<style id="fdp-theme">{style}</style>\n'
+            + house_link
+            + f"<script>window.FDP_CONFIG = {runtime_json};</script>\n"
+            + (f'<template id="fdp-logo">{logo_html}</template>\n' if logo_html else ""))
 
 
 def main():

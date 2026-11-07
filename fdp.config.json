@@ -26,9 +26,16 @@
     "account": ""
   },
   "theme": {
+    "$comment": "Your house style. Colours, fonts, corners and logo here; anything else in assets/house-style.css, which loads last. See README → House style.",
     "logo": "assets/logo.svg",
+    "favicon": "",
     "headingFont": "Source Serif 4",
     "bodyFont": "Source Sans 3",
+    "monoFont": "JetBrains Mono",
+    "radius": 12,
+    "buttonRadius": 999,
+    "stylesheet": "assets/house-style.css",
+    "navLinks": [],
     "light": {
       "primary": "#24507a",
       "primaryHover": "#33689b",
