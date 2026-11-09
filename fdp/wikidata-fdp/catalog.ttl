@@ -5,7 +5,7 @@
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix fdp:     <https://w3id.org/fdp/fdp-o#> .
 @prefix r3d:     <http://www.re3data.org/schema/3-0#> .
-@prefix am:      <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/vocab/access-methods#> .
+@prefix am:      <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/vocab/access-methods.ttl#> .
 @prefix :        <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/> .
 
 <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/>
@@ -13,9 +13,9 @@
     dcterms:title "Wikidata — example source (replace or remove) FAIR Data Point — FDP Ecosystem Template"@en ;
     dcterms:publisher :publisher-source ;
     dcterms:modified "2026-10-08"^^xsd:date ;
-    fdp:hasCatalog :catalog .
+    fdp:hasCatalog <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl#catalog> .
 
-:catalog
+<https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl#catalog>
     a dcat:Catalog ;
     dcterms:title "Wikidata — example source (replace or remove)"@en ;
     dcterms:description "An example catalog showing the conventions: one dataset, every way to get it, each typed with an access method and a How to get it recipe. Replace it with your own sources."@en ;
