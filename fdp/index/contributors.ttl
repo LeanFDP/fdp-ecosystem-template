@@ -11,7 +11,7 @@
 <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/index/>
     dcterms:contributor :contributor-andrawaag .
 
-<https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog>
+<https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl#catalog>
     dcterms:creator :contributor-andrawaag .
 
 :contributor-andrawaag

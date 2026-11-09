@@ -1,11 +1,11 @@
 'use strict';
-// Lean FDP browser: fetches the index Turtle, follows rdfs:seeAlso to every
+// Lean FDP browser: fetches the index Turtle, follows fdp:hasCatalog to every
 // sub-catalog, parses everything client-side with N3.js and renders
 // index → catalog → dataset → distributions. No server, no build step.
 //
 // ?index=<url> browses another FDP laid out the same way.
 //
-// An index entry whose rdfs:seeAlso points at a live FAIR Data Point (not a
+// An index entry whose dcterms:source points at a live FAIR Data Point (not a
 // catalog.ttl file) is crawled link by link: FDP → catalogs → datasets and data
 // services → distributions → access services. Missing access-method types are
 // inferred, so live FDPs render like the curated catalogs.
@@ -135,20 +135,22 @@ async function init() {
     publisher: lit(iri(root, NS.dct + 'publisher') || '', NS.foaf + 'name'),
   };
 
-  // Sub-catalog files (rdfs:seeAlso on each fdp:hasCatalog entry) and helper vocabularies
-  // (rdfs:seeAlso on the root that point to .ttl files, e.g. the access-method scheme).
-  const refs = iris(root, NS.fdp + 'hasCatalog').map(c => ({ ref: c, file: iri(c, NS.rdfs + 'seeAlso'), title: lit(c, NS.dct + 'title') }));
-  const vocabFiles = iris(root, NS.rdfs + 'seeAlso').filter(u => /\.ttl$/.test(u));
-  const results = await Promise.allSettled([...refs.filter(r => r.file).map(r => load(r.file)), ...vocabFiles.map(load)]);
+  // Each fdp:hasCatalog entry is a hash IRI in its catalog file, or an entry whose dcterms:source is a
+  // live FDP. Indexes that scripts/migrate_seealso.py has not converted yet still use rdfs:seeAlso.
+  const fileOf = c => iri(c, NS.dct + 'source') || iri(c, NS.rdfs + 'seeAlso') || (c.includes('#') ? c.split('#')[0] : null);
+  const refs = iris(root, NS.fdp + 'hasCatalog').map(c => ({ ref: c, file: fileOf(c), title: lit(c, NS.dct + 'title') }));
+  // The access-method scheme lives next to the index folder.
+  const vocabFile = new URL('../vocab/access-methods.ttl', canonicalIndex).href;
+  const results = await Promise.allSettled([...refs.filter(r => r.file).map(r => load(r.file)), load(vocabFile)]);
   failures = results.filter(r => r.status === 'rejected').map(r => r.reason.message);
 
   // Entries that point at a live FAIR Data Point rather than a catalog file: crawl them.
   for (const r of refs) r.liveRoot = r.file && sources.has(r.file) ? liveRootIn(r.file) : null;
   await Promise.all(refs.filter(r => r.liveRoot).map(r => crawl(r.liveRoot).then(errs => failures.push(...errs))));
 
-  // The access-method vocabulary is the linked file that defines a skos:ConceptScheme.
-  const vocab = vocabFiles.find(f => store.getSubjects(namedNode(NS.rdf + 'type'), namedNode(NS.skos + 'ConceptScheme'), namedNode(f)).length);
-  amBase = vocab ? vocab.replace(/\.ttl$/, '#') : null;
+  // The namespace of the access-method terms is the one the scheme itself uses.
+  const scheme = store.getSubjects(namedNode(NS.rdf + 'type'), namedNode(NS.skos + 'ConceptScheme'), namedNode(vocabFile))[0];
+  amBase = scheme ? scheme.value.replace(/[^#]*$/, '') : null;
   catalogs = refs.map(r => r.liveRoot ? buildLiveCatalog(r) : buildCatalog(r)).filter(Boolean);
   [contributors, fairReport] = await Promise.all([loadContributors(), loadJson('fair-report.json')]);
   renderChrome();
@@ -159,11 +161,11 @@ async function init() {
 
 function buildCatalog({ ref, file, title }) {
   const graph = file ? namedNode(file) : null;
-  if (file && !sources.has(file)) return { key: localName(ref), ref, file, title, missing: true, datasets: [] };
+  const key = file ? localName(file.replace(/\/catalog\.ttl$/, '')) : localName(ref);
+  if (file && !sources.has(file)) return { key, ref, file, title: title || key, missing: true, datasets: [] };
   // The dcat:Catalog in that file that actually lists datasets.
   const cat = store.getSubjects(namedNode(NS.dcat + 'dataset'), null, graph).map(t => t.value)
     .find(s => hasType(s, NS.dcat + 'Catalog')) || ref;
-  const key = file ? localName(file.replace(/\/catalog\.ttl$/, '')) : localName(ref);
   return {
     key, ref, file, iri: cat,
     title: lit(cat, NS.dct + 'title') || title,

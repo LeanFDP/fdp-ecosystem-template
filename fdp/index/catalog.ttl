@@ -20,19 +20,12 @@
     dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
     dcat:landingPage <https://fdp.semscape.org/fdp-ecosystem-template/> ;
     pim:persistencePolicy <https://github.com/LeanFDP/fdp-ecosystem-template/blob/main/PERSISTENCE.md> ;
-    dcterms:modified "2026-10-08"^^xsd:date ;
-    rdfs:seeAlso <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/vocab/access-methods.ttl> ,
-        <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/index/contributors.ttl> ;
+    dcterms:modified "2026-11-09"^^xsd:date ;
+    dcterms:hasPart <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/index/contributors.ttl> ;
     # The catalog documents themselves, for clients that follow LDP containment.
     ldp:contains
         <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl> ;
     fdp:hasCatalog
-        :catalog-wikidata .
-
-:catalog-wikidata
-    a dcat:Catalog ;
-    dcterms:title "Wikidata — example source (replace or remove)"@en ;
-    dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
-    rdfs:seeAlso <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl> .
+        <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl#catalog> .
 
 :publisher-curator a foaf:Person ; foaf:name "Andra Waagmeester" ; foaf:homepage <https://orcid.org/0000-0001-9773-4008> .

@@ -24,7 +24,7 @@ from rdflib import Graph, Namespace, URIRef
 from rdflib.namespace import DCAT, DCTERMS, FOAF, RDF, RDFS
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from fdpconfig import CONFIG, INDEX_FOLDER, ROOT, SITE_URL  # noqa: E402
+from fdpconfig import BASE_IRI, CONFIG, INDEX_FOLDER, ROOT, SITE_URL  # noqa: E402
 FDP = Namespace("https://w3id.org/fdp/fdp-o#")
 SKOS = Namespace("http://www.w3.org/2004/02/skos/core#")
 IANA = "https://www.iana.org/assignments/media-types/"
@@ -114,23 +114,23 @@ def main():
     for f in sorted((ROOT / "fdp").glob("**/*.ttl")):
         g.parse(f, format="turtle")
 
-    # The index: the metadata service whose catalogs point (rdfs:seeAlso) at other documents.
-    root = max(set(g.subjects(FDP.hasCatalog, None)),
-               key=lambda r: sum(1 for c in g.objects(r, FDP.hasCatalog) if (c, RDFS.seeAlso, None) in g))
+    root = URIRef(f"{BASE_IRI}{INDEX_FOLDER}/")
     index_file = public + f"fdp/{INDEX_FOLDER}/catalog.ttl"
     label = lambda t: text(g, t, SKOS.prefLabel) or str(t).rsplit("#", 1)[-1]
 
-    # Curated catalogs in index order: the dcat:Catalog that lists datasets in each linked file.
+    # Curated catalogs in index order. A hash IRI names the catalog in its own document; an index
+    # that scripts/migrate_seealso.py has not converted yet still links the document with rdfs:seeAlso.
     entries = []
     for ref in sorted(g.objects(root, FDP.hasCatalog), key=str):
-        f = next(iter(g.objects(ref, RDFS.seeAlso)), None)
-        if not f or not str(f).endswith("/catalog.ttl"):
+        hashed = "#" in ref
+        f = str(ref).split("#")[0] if hashed else str(next(iter(g.objects(ref, RDFS.seeAlso)), ""))
+        if not f.endswith("/catalog.ttl"):
             continue  # live FDPs are crawled by the viewer, not described here
-        cat = URIRef(str(f).rsplit("/", 1)[0] + "/catalog")
+        cat = ref if hashed else URIRef(f.rsplit("/", 1)[0] + "/catalog")
         if (cat, RDF.type, DCAT.Catalog) in g:
-            entries.append((str(f).split("/fdp/", 1)[1].split("/")[0], cat))
-    order = [m for m in re.findall(r":catalog-([\w-]+)", (ROOT / "fdp" / INDEX_FOLDER / "catalog.ttl").read_text())]
-    entries.sort(key=lambda e: next((i for i, o in enumerate(order) if e[0].startswith(o)), 99))
+            entries.append((f.split("/fdp/", 1)[1].split("/")[0], cat))
+    index_text = (ROOT / "fdp" / INDEX_FOLDER / "catalog.ttl").read_text()
+    entries.sort(key=lambda e: index_text.find(f"/{e[0]}/catalog.ttl"))
 
     # ── static HTML ──
     e = html.escape
