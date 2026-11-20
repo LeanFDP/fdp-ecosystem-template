@@ -164,7 +164,7 @@ def turtle(data):
         if folder == INDEX_FOLDER:
             continue
         others = [l for l in info["contributors"] if l != info["addedBy"]]
-        lines = [f"<{base}{folder}/catalog>", f"    dcterms:creator {pid(info['addedBy'])}"]
+        lines = [f"<{base}{folder}/catalog.ttl#catalog>", f"    dcterms:creator {pid(info['addedBy'])}"]
         if others:
             lines[-1] += " ;"
             lines.append(f"    dcterms:contributor {' , '.join(pid(l) for l in others)}")

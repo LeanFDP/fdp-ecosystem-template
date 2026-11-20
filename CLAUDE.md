@@ -13,4 +13,5 @@ A static FAIR Data Point in Turtle (`fdp/`) with a client-side viewer (`site/`),
   scripts/build-site.sh && python3 -m http.server -d _site 8000
   ```
 
+- **No `rdfs:seeAlso`.** Link with a predicate that says what the link is. Catalogs and access-method terms are hash IRIs in their own documents; a live FDP is an index entry with `dcterms:source`.
 - **Moving IRIs.** Use `scripts/set-base.sh` (to another repository or a w3id); it also updates the config.

@@ -43,7 +43,7 @@ Use the issue form with **Live**, or add an entry to the index, `fdp/<indexFolde
 :catalog-bgv-live
     a dcat:Catalog ;
     dcterms:title "BGV-UPM germplasm bank"@en ;
-    rdfs:seeAlso <https://w3id.org/bgv-fdp> .
+    dcterms:source <https://w3id.org/bgv-fdp> .
 ```
 
 Also add `:catalog-bgv-live` to the `fdp:hasCatalog` list at the top of that file.
@@ -72,8 +72,8 @@ The script refuses invalid slugs, URLs or media types, unknown access methods, a
 
 #### By hand
 
-1. Copy a small catalog, e.g. `fdp/geonames-fdp/catalog.ttl`, to `fdp/<slug>-fdp/catalog.ttl`. Change the `@prefix :` line and the root IRI to the new folder.
-2. Add a `:catalog-<slug>` entry to the index, `fdp/<indexFolder>/catalog.ttl`, (title, licence, `rdfs:seeAlso` to the new file), and add it to `fdp:hasCatalog`.
+1. Copy a small catalog, e.g. `fdp/geonames-fdp/catalog.ttl`, to `fdp/<slug>-fdp/catalog.ttl`. Change the `@prefix :` line, the root IRI and the catalog IRI (`<…/<slug>-fdp/catalog.ttl#catalog>`) to the new folder.
+2. In the index, `fdp/<indexFolder>/catalog.ttl`, add the catalog IRI (`<…/<slug>-fdp/catalog.ttl#catalog>`) to `fdp:hasCatalog` and the file (`<…/<slug>-fdp/catalog.ttl>`) to `ldp:contains`.
 3. Run `python3 scripts/validate.py`, then preview:
 
    ```bash
@@ -103,7 +103,7 @@ The site's Contributors section is rebuilt on every deploy by `scripts/contribut
 - merged pull requests
 - "Add a data source" issues: whoever fills in the form is credited for the catalog, even though the bot makes the commit
 
-Each catalog page shows who added it and who improved it. The same information is part of the FDP metadata in `fdp/<indexFolder>/contributors.ttl`, which the index links with `rdfs:seeAlso`:
+Each catalog page shows who added it and who improved it. The same information is part of the FDP metadata in `fdp/<indexFolder>/contributors.ttl`, which the index links with `dcterms:hasPart`:
 
 - `dcterms:creator` and `dcterms:contributor` on the index and on each catalog
 - `foaf:Person` nodes with the person's GitHub account, and `owl:sameAs` links to their Wikidata item and ORCID
@@ -131,3 +131,14 @@ The *FAIR assessment* workflow ([`.github/workflows/fair.yml`](.github/workflows
 
 The test service is shared infrastructure, so keep deep runs occasional.
 
+## FDPs made before hash IRIs
+
+This template no longer uses `rdfs:seeAlso`. In an FDP made earlier, `scripts/validate.py` warns about it, and one command converts the Turtle:
+
+```bash
+python3 scripts/migrate_seealso.py --dry-run   # shows what would change
+python3 scripts/migrate_seealso.py
+python3 scripts/validate.py
+```
+
+It gives catalogs and access-method terms hash IRIs, drops the stubs on the index, uses `dcterms:source` for live FDPs and `dcterms:hasPart` for contributors. Any other `rdfs:seeAlso` was written by a curator, so the script lists it and leaves it: replace it with a predicate that says what the link is, such as `dcterms:references`.
