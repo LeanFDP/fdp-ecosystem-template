@@ -117,3 +117,8 @@
 
 :publisher-source a foaf:Organization ; foaf:name "Wikimedia Foundation"@en ; foaf:homepage <https://www.wikimedia.org> .
 :publisher-curator a foaf:Person ; foaf:name "Andra Waagmeester" ; foaf:homepage <https://orcid.org/0000-0001-9773-4008> .
+
+# Identifiers that FAIR tests look for: the canonical IRI and the address on the website.
+<https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/> dcterms:identifier "https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/" , "https://fdp.semscape.org/fdp-ecosystem-template/fdp/wikidata-fdp/catalog.ttl" .
+<https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl#catalog> dcterms:identifier "https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl#catalog" , "https://fdp.semscape.org/fdp-ecosystem-template/fdp/wikidata-fdp/catalog.ttl#catalog" .
+<https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/catalog.ttl> foaf:primaryTopic <https://raw.githubusercontent.com/LeanFDP/fdp-ecosystem-template/main/fdp/wikidata-fdp/> .
